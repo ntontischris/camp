@@ -1,8 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
-
-const inter = Inter({ subsets: ['latin', 'greek'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: 'CampWise - Intelligent Camp Scheduling',
@@ -16,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="el">
-      <body className={inter.variable}>{children}</body>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }
