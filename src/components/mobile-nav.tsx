@@ -23,6 +23,7 @@ const quickNav: NavItem[] = [
 
 const allNav: NavItem[] = [
   { href: '/dashboard', label: 'Αρχική', icon: '📊' },
+  { href: '/dashboard/guide', label: 'Οδηγός Ρύθμισης', icon: '📖' },
   { href: '/dashboard/sessions', label: 'Περίοδοι', icon: '📅' },
   { href: '/dashboard/groups', label: 'Ομάδες', icon: '👥' },
   { href: '/dashboard/activities', label: 'Δραστηριότητες', icon: '🎯' },

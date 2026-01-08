@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 
 const routeLabels: Record<string, string> = {
   dashboard: 'Αρχική',
+  guide: 'Οδηγός Ρύθμισης',
   sessions: 'Περίοδοι',
   groups: 'Ομάδες',
   activities: 'Δραστηριότητες',
