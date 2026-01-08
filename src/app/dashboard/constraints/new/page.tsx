@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useOrganizations } from '@/hooks/use-organizations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { PageHeader, FormSection, FieldHelp, InfoBox } from '@/components/ui/page-header';
 import type { Database, ConstraintType, Json } from '@/lib/types/database';
 
 type Session = Database['public']['Tables']['sessions']['Row'];
@@ -124,6 +125,13 @@ const TEMPLATES = [
     is_hard: false,
     priority: 5,
   },
+];
+
+const STEP_LABELS = [
+  { step: 1, name: 'Τύπος', icon: '🎯' },
+  { step: 2, name: 'Εμβέλεια', icon: '📍' },
+  { step: 3, name: 'Συνθήκη', icon: '⚡' },
+  { step: 4, name: 'Ρυθμίσεις', icon: '⚙️' },
 ];
 
 export default function NewConstraintPage() {
@@ -347,99 +355,113 @@ export default function NewConstraintPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <Link href="/dashboard/constraints" className="text-sm text-primary-600 hover:text-primary-500">
-          ← Πίσω στους Περιορισμούς
-        </Link>
-        <h1 className="mt-4 text-3xl font-bold text-gray-900">Νέος Περιορισμός</h1>
-        <p className="mt-2 text-gray-600">
-          Δημιούργησε έναν κανόνα για τη δημιουργία προγράμματος
-        </p>
-      </div>
+      <Link href="/dashboard/constraints" className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 mb-4">
+        ← Πίσω στους Περιορισμούς
+      </Link>
 
-      {/* Progress */}
-      <div className="mb-8">
+      <PageHeader
+        title="Νέος Περιορισμός"
+        description="Δημιούργησε έναν κανόνα για τη δημιουργία προγράμματος"
+        icon="⚡"
+        helpText="Οι Περιορισμοί (Constraints) είναι κανόνες που πρέπει να τηρούνται κατά τη δημιουργία προγράμματος. Για παράδειγμα: 'η κολύμβηση γίνεται μόνο πρωί', 'μετά το φαγητό 30 λεπτά διάλειμμα', 'η πισίνα δέχεται μόνο 1 ομάδα κάθε φορά'."
+        tips={[
+          'Ξεκίνα με τους πιο σημαντικούς περιορισμούς (ασφάλεια, χωρητικότητα)',
+          'Χρησιμοποίησε «Αυστηρούς» για απόλυτους κανόνες, «Ευέλικτους» για προτιμήσεις',
+          'Δοκίμασε τα έτοιμα πρότυπα για γρήγορη εκκίνηση'
+        ]}
+      />
+
+      {/* Progress Steps */}
+      <div className="mb-8 bg-white rounded-lg border border-gray-200 p-4">
         <div className="flex items-center justify-between">
-          {[1, 2, 3, 4].map((s) => (
-            <div key={s} className="flex items-center">
-              <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
-                  step >= s
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-200 text-gray-600'
-                }`}
+          {STEP_LABELS.map((s, idx) => (
+            <div key={s.step} className="flex items-center">
+              <button
+                onClick={() => s.step < step && setStep(s.step)}
+                disabled={s.step > step}
+                className={`flex flex-col items-center ${s.step <= step ? 'cursor-pointer' : 'cursor-not-allowed'}`}
               >
-                {s}
-              </div>
-              {s < 4 && (
                 <div
-                  className={`h-1 w-16 sm:w-24 ${
-                    step > s ? 'bg-primary-600' : 'bg-gray-200'
+                  className={`flex h-10 w-10 items-center justify-center rounded-full text-lg font-medium transition-colors ${
+                    step === s.step
+                      ? 'bg-primary-600 text-white ring-4 ring-primary-100'
+                      : step > s.step
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200 text-gray-600'
+                  }`}
+                >
+                  {step > s.step ? '✓' : s.icon}
+                </div>
+                <span className={`mt-1 text-xs ${step === s.step ? 'text-primary-600 font-medium' : 'text-gray-500'}`}>
+                  {s.name}
+                </span>
+              </button>
+              {idx < STEP_LABELS.length - 1 && (
+                <div
+                  className={`h-1 w-12 sm:w-20 mx-2 rounded ${
+                    step > s.step ? 'bg-green-500' : 'bg-gray-200'
                   }`}
                 />
               )}
             </div>
           ))}
         </div>
-        <div className="mt-2 flex justify-between text-xs text-gray-500">
-          <span>Τύπος</span>
-          <span>Εμβέλεια</span>
-          <span>Συνθήκη</span>
-          <span>Ρυθμίσεις</span>
-        </div>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-800">
-          {error}
+        <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-800">
+          ⚠️ {error}
         </div>
       )}
 
       {/* Step 1: Choose Type */}
       {step === 1 && (
-        <div>
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Επίλεξε Τύπο</CardTitle>
-              <CardDescription>Τι είδους περιορισμό θέλεις να δημιουργήσεις;</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {CONSTRAINT_TYPES.map((ct) => (
-                  <button
-                    key={ct.type}
-                    type="button"
-                    onClick={() => {
-                      setConstraintType(ct.type);
-                      nextStep();
-                    }}
-                    className={`rounded-lg border-2 p-4 text-left transition-colors ${
-                      constraintType === ct.type
-                        ? 'border-primary-500 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{ct.icon}</span>
-                      <div>
-                        <div className="font-medium text-gray-900">{ct.label}</div>
-                        <div className="text-xs text-gray-500">{ct.description}</div>
-                      </div>
+        <div className="space-y-6">
+          <FormSection
+            title="Επίλεξε Τύπο Περιορισμού"
+            description="Τι είδους κανόνα θέλεις να δημιουργήσεις;"
+            icon="🎯"
+            required
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {CONSTRAINT_TYPES.map((ct) => (
+                <button
+                  key={ct.type}
+                  type="button"
+                  onClick={() => {
+                    setConstraintType(ct.type);
+                    nextStep();
+                  }}
+                  className={`rounded-lg border-2 p-4 text-left transition-all hover:shadow-md ${
+                    constraintType === ct.type
+                      ? 'border-primary-500 bg-primary-50 shadow-md'
+                      : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{ct.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-900">{ct.label}</div>
+                      <div className="text-xs text-gray-500 truncate">{ct.description}</div>
                     </div>
-                    <div className="mt-2 text-xs text-gray-400 italic">
-                      π.χ. {ct.example}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-400 italic bg-gray-50 p-2 rounded">
+                    π.χ. {ct.example}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </FormSection>
 
           {/* Templates */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Έτοιμα Πρότυπα</CardTitle>
-              <CardDescription>Ξεκίνα με ένα συνηθισμένο περιορισμό</CardDescription>
+              <CardTitle className="text-lg flex items-center gap-2">
+                ⚡ Έτοιμα Πρότυπα
+              </CardTitle>
+              <CardDescription>
+                Ξεκίνα γρήγορα με έναν συνηθισμένο περιορισμό - κάνε κλικ για να τον φορτώσεις
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -448,7 +470,7 @@ export default function NewConstraintPage() {
                     key={idx}
                     type="button"
                     onClick={() => applyTemplate(template)}
-                    className="w-full rounded-lg border border-gray-200 p-3 text-left hover:bg-gray-50"
+                    className="w-full rounded-lg border border-gray-200 p-3 text-left hover:bg-primary-50 hover:border-primary-300 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -470,70 +492,102 @@ export default function NewConstraintPage() {
               </div>
             </CardContent>
           </Card>
+
+          <InfoBox type="info" title="Αυστηρός vs Ευέλικτος">
+            <ul className="space-y-1">
+              <li><strong>Αυστηρός (Hard):</strong> Δεν επιτρέπεται παραβίαση - αν δεν τηρηθεί, δεν μπορεί να δημιουργηθεί πρόγραμμα</li>
+              <li><strong>Ευέλικτος (Soft):</strong> Προτιμάται η τήρηση, αλλά μπορεί να παραβιαστεί αν είναι απαραίτητο</li>
+            </ul>
+          </InfoBox>
         </div>
       )}
 
       {/* Step 2: Define Scope */}
       {step === 2 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Εμβέλεια & Εφαρμογή</CardTitle>
-            <CardDescription>Σε τι εφαρμόζεται αυτός ο περιορισμός;</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Εμβέλεια</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
+        <div className="space-y-6">
+          <FormSection
+            title="Εμβέλεια Περιορισμού"
+            description="Πού ισχύει αυτός ο περιορισμός;"
+            icon="📍"
+            required
+          >
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                  scopeType === 'organization' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
+                }`}>
                   <input
                     type="radio"
                     name="scopeType"
                     checked={scopeType === 'organization'}
                     onChange={() => setScopeType('organization')}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                    className="h-5 w-5 text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="text-sm text-gray-700">Global (όλες οι περίοδοι)</span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🌍</span>
+                      <span className="font-medium text-gray-900">Global</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Ισχύει σε όλες τις περιόδους
+                    </p>
+                  </div>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                  scopeType === 'session' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
+                }`}>
                   <input
                     type="radio"
                     name="scopeType"
                     checked={scopeType === 'session'}
                     onChange={() => setScopeType('session')}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                    className="h-5 w-5 text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="text-sm text-gray-700">Συγκεκριμένη περίοδος</span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">📅</span>
+                      <span className="font-medium text-gray-900">Συγκεκριμένη Περίοδος</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Ισχύει μόνο σε μία περίοδο
+                    </p>
+                  </div>
                 </label>
               </div>
-            </div>
 
-            {scopeType === 'session' && (
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Περίοδος</label>
-                <select
-                  value={sessionId}
-                  onChange={(e) => setSessionId(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
-                >
-                  <option value="">Επίλεξε περίοδο...</option>
-                  {sessions.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="border-t pt-6">
-              <h4 className="text-sm font-medium text-gray-900 mb-4">Εφαρμόζεται σε:</h4>
-
-              <div className="space-y-4">
+              {scopeType === 'session' && (
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Δραστηριότητες
-                  </label>
-                  <div className="max-h-40 overflow-y-auto rounded border border-gray-200 p-2">
-                    {activities.map((a) => (
-                      <label key={a.id} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-50 px-2 rounded">
+                  <label className="block text-sm font-medium text-gray-700">Περίοδος</label>
+                  <select
+                    value={sessionId}
+                    onChange={(e) => setSessionId(e.target.value)}
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  >
+                    <option value="">Επίλεξε περίοδο...</option>
+                    {sessions.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                  <FieldHelp text="Ο περιορισμός θα ισχύει μόνο για αυτή την περίοδο" />
+                </div>
+              )}
+            </div>
+          </FormSection>
+
+          <FormSection
+            title="Εφαρμόζεται σε"
+            description="Ποιες δραστηριότητες/εγκαταστάσεις αφορά (προαιρετικό)"
+            icon="🎯"
+          >
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Δραστηριότητες
+                </label>
+                <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 p-2">
+                  {activities.length > 0 ? (
+                    activities.map((a) => (
+                      <label key={a.id} className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-gray-50 px-2 rounded">
                         <input
                           type="checkbox"
                           checked={scopeActivities.includes(a.id)}
@@ -547,28 +601,31 @@ export default function NewConstraintPage() {
                           className="h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
                         />
                         <span
-                          className="w-3 h-3 rounded"
+                          className="w-3 h-3 rounded flex-shrink-0"
                           style={{ backgroundColor: a.color || '#6B7280' }}
                         />
                         <span className="text-sm text-gray-700">{a.name}</span>
                       </label>
-                    ))}
-                    {activities.length === 0 && (
-                      <div className="text-sm text-gray-400 py-2">Δεν υπάρχουν δραστηριότητες</div>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    {scopeActivities.length === 0 ? 'Όλες οι δραστηριότητες' : `${scopeActivities.length} επιλεγμένες`}
-                  </p>
+                    ))
+                  ) : (
+                    <div className="text-sm text-gray-400 py-4 text-center">
+                      Δεν υπάρχουν δραστηριότητες. <Link href="/dashboard/activities/new" className="text-primary-600 hover:underline">Πρόσθεσε μία</Link>
+                    </div>
+                  )}
                 </div>
+                <p className="text-xs text-gray-500">
+                  {scopeActivities.length === 0 ? '📌 Αν δεν επιλέξεις, ισχύει για όλες τις δραστηριότητες' : `✓ ${scopeActivities.length} επιλεγμένες`}
+                </p>
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Εγκαταστάσεις
-                  </label>
-                  <div className="max-h-32 overflow-y-auto rounded border border-gray-200 p-2">
-                    {facilities.map((f) => (
-                      <label key={f.id} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-50 px-2 rounded">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Χώροι
+                </label>
+                <div className="max-h-32 overflow-y-auto rounded-lg border border-gray-200 p-2">
+                  {facilities.length > 0 ? (
+                    facilities.map((f) => (
+                      <label key={f.id} className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-gray-50 px-2 rounded">
                         <input
                           type="checkbox"
                           checked={scopeFacilities.includes(f.id)}
@@ -582,217 +639,280 @@ export default function NewConstraintPage() {
                           className="h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
                         />
                         <span className="text-sm text-gray-700">{f.name}</span>
+                        {f.indoor && <span className="text-xs text-gray-400">(εσωτ.)</span>}
                       </label>
-                    ))}
-                    {facilities.length === 0 && (
-                      <div className="text-sm text-gray-400 py-2">Δεν υπάρχουν εγκαταστάσεις</div>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    {scopeFacilities.length === 0 ? 'Όλες οι εγκαταστάσεις' : `${scopeFacilities.length} επιλεγμένες`}
-                  </p>
+                    ))
+                  ) : (
+                    <div className="text-sm text-gray-400 py-4 text-center">
+                      Δεν υπάρχουν χώροι. <Link href="/dashboard/facilities/new" className="text-primary-600 hover:underline">Πρόσθεσε έναν</Link>
+                    </div>
+                  )}
                 </div>
+                <p className="text-xs text-gray-500">
+                  {scopeFacilities.length === 0 ? '📌 Αν δεν επιλέξεις, ισχύει για όλους τους χώρους' : `✓ ${scopeFacilities.length} επιλεγμένοι`}
+                </p>
               </div>
             </div>
+          </FormSection>
 
-            <div className="flex justify-between pt-4">
+          <Card>
+            <CardFooter className="flex justify-between py-4">
               <Button variant="outline" onClick={prevStep}>
-                Πίσω
+                ← Πίσω
               </Button>
               <Button onClick={nextStep}>
-                Συνέχεια
+                Συνέχεια →
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardFooter>
+          </Card>
+        </div>
       )}
 
       {/* Step 3: Set Condition */}
       {step === 3 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Συνθήκη</CardTitle>
-            <CardDescription>Ποια είναι η συνθήκη του περιορισμού;</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <div className="space-y-6">
+          <FormSection
+            title="Συνθήκη Περιορισμού"
+            description={`Ρύθμισε τις παραμέτρους για τον τύπο: ${CONSTRAINT_TYPES.find(ct => ct.type === constraintType)?.label}`}
+            icon="⚡"
+            required
+          >
             {constraintType === 'time_restriction' && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Από ώρα</label>
-                  <Input
-                    type="time"
-                    value={conditionTimeStart}
-                    onChange={(e) => setConditionTimeStart(e.target.value)}
-                  />
+              <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Από ώρα</label>
+                    <Input
+                      type="time"
+                      value={conditionTimeStart}
+                      onChange={(e) => setConditionTimeStart(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Έως ώρα</label>
+                    <Input
+                      type="time"
+                      value={conditionTimeEnd}
+                      onChange={(e) => setConditionTimeEnd(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Έως ώρα</label>
-                  <Input
-                    type="time"
-                    value={conditionTimeEnd}
-                    onChange={(e) => setConditionTimeEnd(e.target.value)}
-                  />
-                </div>
-                <p className="sm:col-span-2 text-sm text-gray-500">
-                  Οι επιλεγμένες δραστηριότητες επιτρέπονται μόνο σε αυτό το χρονικό διάστημα
-                </p>
+                <InfoBox type="info">
+                  Οι επιλεγμένες δραστηριότητες θα επιτρέπονται <strong>μόνο</strong> μέσα σε αυτό το χρονικό διάστημα.
+                </InfoBox>
               </div>
             )}
 
             {(constraintType === 'daily_limit' || constraintType === 'daily_minimum') && (
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  {constraintType === 'daily_limit' ? 'Μέγιστες φορές/ημέρα' : 'Ελάχιστες φορές/ημέρα'}
-                </label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={conditionLimit}
-                  onChange={(e) => setConditionLimit(e.target.value)}
-                  placeholder="π.χ. 2"
-                />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    {constraintType === 'daily_limit' ? 'Μέγιστες φορές/ημέρα' : 'Ελάχιστες φορές/ημέρα'}
+                  </label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={conditionLimit}
+                    onChange={(e) => setConditionLimit(e.target.value)}
+                    placeholder="π.χ. 2"
+                    className="max-w-xs"
+                  />
+                  <FieldHelp
+                    text={constraintType === 'daily_limit'
+                      ? 'Η δραστηριότητα δεν μπορεί να εμφανιστεί περισσότερες φορές'
+                      : 'Η δραστηριότητα πρέπει να εμφανιστεί τουλάχιστον τόσες φορές'}
+                    example={constraintType === 'daily_limit' ? 'Κολύμβηση max 2 φορές/ημέρα' : 'Τουλάχιστον 1 αθλητική/ημέρα'}
+                  />
+                </div>
               </div>
             )}
 
             {constraintType === 'consecutive_limit' && (
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Μέγιστες συνεχόμενες φορές
-                </label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={conditionLimit}
-                  onChange={(e) => setConditionLimit(e.target.value)}
-                  placeholder="π.χ. 1"
-                />
-                <p className="text-sm text-gray-500">
-                  Π.χ. αν βάλεις 1, δεν μπορεί η ίδια δραστηριότητα 2 φορές στη σειρά
-                </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Μέγιστες συνεχόμενες φορές
+                  </label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={conditionLimit}
+                    onChange={(e) => setConditionLimit(e.target.value)}
+                    placeholder="π.χ. 1"
+                    className="max-w-xs"
+                  />
+                  <FieldHelp
+                    text="Αν βάλεις 1, η ίδια δραστηριότητα δεν μπορεί να γίνει 2 φορές στη σειρά"
+                    example="Όχι Ποδόσφαιρο → Ποδόσφαιρο"
+                  />
+                </div>
               </div>
             )}
 
             {constraintType === 'staff_limit' && (
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Μέγιστα slots/εκπαιδευτή/ημέρα
-                </label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={conditionLimit}
-                  onChange={(e) => setConditionLimit(e.target.value)}
-                  placeholder="π.χ. 4"
-                />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Μέγιστα slots/εκπαιδευτή/ημέρα
+                  </label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={conditionLimit}
+                    onChange={(e) => setConditionLimit(e.target.value)}
+                    placeholder="π.χ. 4"
+                    className="max-w-xs"
+                  />
+                  <FieldHelp
+                    text="Κάθε μέλος προσωπικού μπορεί να αναλάβει το πολύ τόσα slots/ημέρα"
+                  />
+                </div>
               </div>
             )}
 
             {constraintType === 'gap_required' && (
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Απαιτούμενο κενό (λεπτά)
-                </label>
-                <Input
-                  type="number"
-                  min="5"
-                  max="120"
-                  step="5"
-                  value={conditionMinutes}
-                  onChange={(e) => setConditionMinutes(e.target.value)}
-                  placeholder="π.χ. 30"
-                />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Απαιτούμενο κενό (λεπτά)
+                  </label>
+                  <Input
+                    type="number"
+                    min="5"
+                    max="120"
+                    step="5"
+                    value={conditionMinutes}
+                    onChange={(e) => setConditionMinutes(e.target.value)}
+                    placeholder="π.χ. 30"
+                    className="max-w-xs"
+                  />
+                  <FieldHelp
+                    text="Πρέπει να υπάρχει τουλάχιστον αυτό το κενό μετά τις επιλεγμένες δραστηριότητες"
+                    example="30 λεπτά μετά το φαγητό πριν από κολύμβηση"
+                  />
+                </div>
               </div>
             )}
 
             {(constraintType === 'sequence' || constraintType === 'weather_substitute' ||
               constraintType === 'facility_exclusive' || constraintType === 'group_separation') && (
-              <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-600">
-                <p className="font-medium mb-2">Πληροφορία:</p>
-                <p>
-                  Αυτός ο τύπος περιορισμού χρησιμοποιεί αυτόματα τις επιλεγμένες
-                  δραστηριότητες και εγκαταστάσεις από το προηγούμενο βήμα.
-                </p>
-              </div>
+              <InfoBox type="info" title="Αυτόματη ρύθμιση">
+                Αυτός ο τύπος περιορισμού χρησιμοποιεί αυτόματα τις επιλεγμένες
+                δραστηριότητες και εγκαταστάσεις από το προηγούμενο βήμα.
+                <br /><br />
+                <strong>Πώς λειτουργεί:</strong>
+                <ul className="list-disc ml-4 mt-2">
+                  {constraintType === 'sequence' && <li>Οι επιλεγμένες δραστηριότητες δεν μπορούν να ακολουθήσουν η μία την άλλη</li>}
+                  {constraintType === 'facility_exclusive' && <li>Οι επιλεγμένοι χώροι δέχονται μόνο μία ομάδα κάθε φορά</li>}
+                  {constraintType === 'group_separation' && <li>Οι ομάδες που θα επιλέξεις δεν μπορούν να έχουν δραστηριότητα ταυτόχρονα</li>}
+                  {constraintType === 'weather_substitute' && <li>Όταν ο καιρός δεν επιτρέπει υπαίθριες δραστηριότητες, γίνεται αντικατάσταση</li>}
+                </ul>
+              </InfoBox>
             )}
+          </FormSection>
 
-            <div className="flex justify-between pt-4">
+          <Card>
+            <CardFooter className="flex justify-between py-4">
               <Button variant="outline" onClick={prevStep}>
-                Πίσω
+                ← Πίσω
               </Button>
               <Button onClick={nextStep}>
-                Συνέχεια
+                Συνέχεια →
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardFooter>
+          </Card>
+        </div>
       )}
 
       {/* Step 4: Configure */}
       {step === 4 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Ρυθμίσεις</CardTitle>
-            <CardDescription>Τελικές ρυθμίσεις του περιορισμού</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Όνομα *</label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="π.χ. Κολύμβηση μόνο πρωί"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Περιγραφή</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
-                placeholder="Περιγραφή του περιορισμού..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Είδος Περιορισμού</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="isHard"
-                    checked={isHard}
-                    onChange={() => setIsHard(true)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-sm font-medium text-red-700">Αυστηρός (Hard)</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="isHard"
-                    checked={!isHard}
-                    onChange={() => setIsHard(false)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-sm font-medium text-yellow-700">Ευέλικτος (Soft)</span>
-                </label>
+        <div className="space-y-6">
+          <FormSection
+            title="Ονομασία & Περιγραφή"
+            description="Δώσε ένα αναγνωρίσιμο όνομα"
+            icon="📝"
+            required
+          >
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Όνομα Περιορισμού *</label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="π.χ. Κολύμβηση μόνο πρωί"
+                />
+                <FieldHelp text="Ένα σύντομο, περιγραφικό όνομα" example="Μέγιστο 2 κολύμπι/ημέρα, Πισίνα: 1 ομάδα" />
               </div>
-              <p className="text-xs text-gray-500">
-                {isHard
-                  ? 'Δεν επιτρέπεται παραβίαση - το πρόγραμμα θα απορριφθεί'
-                  : 'Προτιμάται η τήρηση αλλά μπορεί να παραβιαστεί αν χρειαστεί'}
-              </p>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Περιγραφή</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={2}
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  placeholder="Γιατί υπάρχει αυτός ο περιορισμός..."
+                />
+              </div>
+            </div>
+          </FormSection>
+
+          <FormSection
+            title="Τύπος Περιορισμού"
+            description="Πόσο αυστηρός είναι;"
+            icon="⚖️"
+            required
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                isHard ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+              }`}>
+                <input
+                  type="radio"
+                  name="isHard"
+                  checked={isHard}
+                  onChange={() => setIsHard(true)}
+                  className="h-5 w-5 text-red-600 focus:ring-red-500"
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🔴</span>
+                    <span className="font-medium text-red-800">Αυστηρός (Hard)</span>
+                  </div>
+                  <p className="text-sm text-red-600 mt-1">
+                    Δεν επιτρέπεται παραβίαση - απόλυτος κανόνας
+                  </p>
+                </div>
+              </label>
+              <label className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                !isHard ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-gray-300'
+              }`}>
+                <input
+                  type="radio"
+                  name="isHard"
+                  checked={!isHard}
+                  onChange={() => setIsHard(false)}
+                  className="h-5 w-5 text-yellow-600 focus:ring-yellow-500"
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🟡</span>
+                    <span className="font-medium text-yellow-800">Ευέλικτος (Soft)</span>
+                  </div>
+                  <p className="text-sm text-yellow-600 mt-1">
+                    Προτιμάται αλλά μπορεί να παραβιαστεί
+                  </p>
+                </div>
+              </label>
             </div>
 
             {!isHard && (
-              <div className="space-y-2">
+              <div className="mt-4 space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Προτεραιότητα: {priority}/10
+                  Προτεραιότητα: <strong>{priority}/10</strong>
                 </label>
                 <input
                   type="range"
@@ -800,61 +920,79 @@ export default function NewConstraintPage() {
                   max="10"
                   value={priority}
                   onChange={(e) => setPriority(parseInt(e.target.value))}
-                  className="w-full"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 />
-                <p className="text-xs text-gray-500">
-                  Υψηλότερη = πιο σημαντικό να τηρηθεί
-                </p>
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>Χαμηλή</span>
+                  <span>Υψηλή</span>
+                </div>
+                <FieldHelp text="Υψηλότερη = πιο σημαντικό να τηρηθεί" />
               </div>
             )}
+          </FormSection>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Μήνυμα Σφάλματος (προαιρετικό)
-              </label>
-              <Input
-                value={errorMessage}
-                onChange={(e) => setErrorMessage(e.target.value)}
-                placeholder="π.χ. Η κολύμβηση επιτρέπεται μόνο 10:00-12:00"
-              />
-              <p className="text-xs text-gray-500">
-                Εμφανίζεται όταν παραβιάζεται ο περιορισμός
-              </p>
-            </div>
+          <FormSection
+            title="Μήνυμα Σφάλματος"
+            description="Τι να εμφανίζεται όταν παραβιάζεται"
+            icon="💬"
+          >
+            <Input
+              value={errorMessage}
+              onChange={(e) => setErrorMessage(e.target.value)}
+              placeholder="π.χ. Η κολύμβηση επιτρέπεται μόνο 10:00-12:00"
+            />
+            <FieldHelp text="Εμφανίζεται όταν κάποιος προσπαθεί να παραβιάσει τον περιορισμό" />
+          </FormSection>
 
-            {/* Summary */}
-            <div className="rounded-lg bg-gray-50 p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Σύνοψη:</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>
-                  <strong>Τύπος:</strong>{' '}
-                  {CONSTRAINT_TYPES.find(ct => ct.type === constraintType)?.label || '-'}
-                </li>
-                <li>
-                  <strong>Εμβέλεια:</strong>{' '}
-                  {scopeType === 'organization' ? 'Global' : sessions.find(s => s.id === sessionId)?.name || '-'}
-                </li>
-                <li>
-                  <strong>Δραστηριότητες:</strong>{' '}
-                  {scopeActivities.length === 0 ? 'Όλες' : `${scopeActivities.length} επιλεγμένες`}
-                </li>
-                <li>
-                  <strong>Είδος:</strong>{' '}
-                  {isHard ? 'Αυστηρός' : `Ευέλικτος (${priority}/10)`}
-                </li>
-              </ul>
-            </div>
+          {/* Summary */}
+          <Card className="bg-gray-50">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                📋 Σύνοψη
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Τύπος:</span>
+                  <span className="font-medium">
+                    {CONSTRAINT_TYPES.find(ct => ct.type === constraintType)?.icon}{' '}
+                    {CONSTRAINT_TYPES.find(ct => ct.type === constraintType)?.label || '-'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Εμβέλεια:</span>
+                  <span className="font-medium">
+                    {scopeType === 'organization' ? '🌍 Global' : `📅 ${sessions.find(s => s.id === sessionId)?.name || '-'}`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Δραστηριότητες:</span>
+                  <span className="font-medium">
+                    {scopeActivities.length === 0 ? 'Όλες' : `${scopeActivities.length} επιλεγμένες`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Είδος:</span>
+                  <span className={`font-medium ${isHard ? 'text-red-600' : 'text-yellow-600'}`}>
+                    {isHard ? '🔴 Αυστηρός' : `🟡 Ευέλικτος (${priority}/10)`}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <div className="flex justify-between pt-4">
+          <Card>
+            <CardFooter className="flex justify-between py-4">
               <Button variant="outline" onClick={prevStep}>
-                Πίσω
+                ← Πίσω
               </Button>
               <Button onClick={handleSubmit} disabled={saving}>
-                {saving ? 'Αποθήκευση...' : 'Δημιουργία Περιορισμού'}
+                {saving ? 'Αποθήκευση...' : '✓ Δημιουργία Περιορισμού'}
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardFooter>
+          </Card>
+        </div>
       )}
     </div>
   );
