@@ -1123,6 +1123,12 @@ CREATE POLICY "Users can view their organizations"
   ON organizations FOR SELECT
   USING (user_has_org_access(id));
 
+-- Authenticated users can create organizations
+CREATE POLICY "Authenticated users can create organizations"
+  ON organizations FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
 -- Users can update orgs where they're owner/admin
 CREATE POLICY "Owners/admins can update organizations"
   ON organizations FOR UPDATE
@@ -1133,6 +1139,11 @@ CREATE POLICY "Users can view themselves"
   ON users FOR SELECT
   USING (auth.uid() = id);
 
+CREATE POLICY "Users can insert their own record"
+  ON users FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = id);
+
 CREATE POLICY "Users can update themselves"
   ON users FOR UPDATE
   USING (auth.uid() = id);
@@ -1140,7 +1151,21 @@ CREATE POLICY "Users can update themselves"
 -- organization_members: Users can view members of their orgs
 CREATE POLICY "Users can view org members"
   ON organization_members FOR SELECT
-  USING (user_has_org_access(organization_id));
+  USING (
+    user_has_org_access(organization_id)
+    AND is_active = true
+  );
+
+CREATE POLICY "Users can insert themselves as members"
+  ON organization_members FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Owners/admins can manage members"
+  ON organization_members FOR UPDATE
+  USING (
+    user_org_role(organization_id) IN ('owner', 'admin')
+  );
 
 -- sessions: Users can view sessions in their orgs
 CREATE POLICY "Users can view sessions"
