@@ -7,15 +7,16 @@ import { createClient } from '@/lib/supabase/client';
 import { useOrganizations } from '@/hooks/use-organizations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardFooter } from '@/components/ui/card';
+import { PageHeader, FormSection, FieldHelp, InfoBox } from '@/components/ui/page-header';
 
 const ROLES = [
-  { value: 'director', label: 'Διευθυντής' },
-  { value: 'coordinator', label: 'Συντονιστής' },
-  { value: 'instructor', label: 'Εκπαιδευτής' },
-  { value: 'counselor', label: 'Σύμβουλος' },
-  { value: 'support', label: 'Υποστήριξη' },
-  { value: 'volunteer', label: 'Εθελοντής' },
+  { value: 'director', label: 'Διευθυντής', icon: '👔', description: 'Γενική διεύθυνση και επίβλεψη' },
+  { value: 'coordinator', label: 'Συντονιστής', icon: '📋', description: 'Συντονισμός προγράμματος και ομάδων' },
+  { value: 'instructor', label: 'Εκπαιδευτής', icon: '🏃', description: 'Διεξαγωγή δραστηριοτήτων' },
+  { value: 'counselor', label: 'Σύμβουλος', icon: '🤝', description: 'Φροντίδα και υποστήριξη παιδιών' },
+  { value: 'support', label: 'Υποστήριξη', icon: '🛠️', description: 'Διοικητική υποστήριξη' },
+  { value: 'volunteer', label: 'Εθελοντής', icon: '💪', description: 'Εθελοντική συνεισφορά' },
 ];
 
 export default function NewStaffPage() {
@@ -86,7 +87,7 @@ export default function NewStaffPage() {
 
   if (orgLoading) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="text-center text-gray-600">Φόρτωση...</div>
       </div>
     );
@@ -94,7 +95,7 @@ export default function NewStaffPage() {
 
   if (!currentOrganization) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="text-center text-gray-600">
           Δεν έχεις επιλέξει οργανισμό.
         </div>
@@ -103,29 +104,42 @@ export default function NewStaffPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <Link href="/dashboard/staff" className="text-sm text-primary-600 hover:text-primary-500">
-          ← Πίσω στο Προσωπικό
-        </Link>
-        <h1 className="mt-4 text-3xl font-bold text-gray-900">Νέο Μέλος Προσωπικού</h1>
-        <p className="mt-2 text-gray-600">Πρόσθεσε ένα νέο μέλος στο προσωπικό</p>
-      </div>
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <Link href="/dashboard/staff" className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 mb-4">
+        ← Πίσω στο Προσωπικό
+      </Link>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Στοιχεία Μέλους</CardTitle>
-          <CardDescription>Συμπλήρωσε τα βασικά στοιχεία</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="rounded-md bg-red-50 p-4 text-sm text-red-800">
-                {error}
-              </div>
-            )}
+      <PageHeader
+        title="Νέο Μέλος Προσωπικού"
+        description="Πρόσθεσε έναν εκπαιδευτή, σύμβουλο ή άλλο μέλος"
+        icon="👤"
+        helpText="Το Προσωπικό είναι οι άνθρωποι που διεξάγουν τις δραστηριότητες και φροντίζουν τα παιδιά. Κάθε μέλος μπορεί να αναλάβει δραστηριότητες στο πρόγραμμα, ανάλογα με τις ειδικότητές του."
+        tips={[
+          'Ο ρόλος καθορίζει τι μπορεί να κάνει το μέλος στο σύστημα',
+          'Το τηλέφωνο έκτακτης ανάγκης είναι σημαντικό για ασφάλεια',
+          'Μπορείς να συνδέσεις το προσωπικό με συγκεκριμένες δραστηριότητες αργότερα'
+        ]}
+        steps={[
+          { title: 'Βασικά στοιχεία', description: 'Όνομα, ρόλος, κωδικός' },
+          { title: 'Επικοινωνία', description: 'Email και τηλέφωνο' },
+          { title: 'Επαφή έκτακτης ανάγκης', description: 'Για περιπτώσεις ανάγκης' }
+        ]}
+      />
 
-            {/* Basic Info */}
+      <form onSubmit={handleSubmit}>
+        {error && (
+          <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-800">
+            ⚠️ {error}
+          </div>
+        )}
+
+        <FormSection
+          title="Βασικές Πληροφορίες"
+          description="Όνομα και ρόλος του μέλους"
+          icon="📝"
+          required
+        >
+          <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
@@ -153,141 +167,187 @@ export default function NewStaffPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Κωδικός Υπαλλήλου
-                </label>
-                <Input
-                  value={employeeCode}
-                  onChange={(e) => setEmployeeCode(e.target.value)}
-                  placeholder="π.χ. EMP-001"
-                  disabled={loading}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Ρόλος
-                </label>
-                <select
-                  value={role}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Κωδικός Υπαλλήλου
+              </label>
+              <Input
+                value={employeeCode}
+                onChange={(e) => setEmployeeCode(e.target.value)}
+                placeholder="π.χ. EMP-001"
+                disabled={loading}
+                className="max-w-xs"
+              />
+              <FieldHelp
+                text="Εσωτερικός κωδικός για αναγνώριση"
+                example="EMP-001, ST-12, INS-05"
+              />
+            </div>
+          </div>
+        </FormSection>
+
+        <FormSection
+          title="Ρόλος"
+          description="Τι θέση έχει στην κατασκήνωση"
+          icon="🎭"
+          required
+        >
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {ROLES.map((r) => (
+              <label
+                key={r.value}
+                className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
+                  role === r.value
+                    ? 'border-primary-500 bg-primary-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="role"
+                  value={r.value}
+                  checked={role === r.value}
                   onChange={(e) => setRole(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   disabled={loading}
-                >
-                  {ROLES.map((r) => (
-                    <option key={r.value} value={r.value}>
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+                  className="sr-only"
+                />
+                <span className="text-xl flex-shrink-0">{r.icon}</span>
+                <div className="min-w-0">
+                  <span className="text-sm font-medium text-gray-900 block">{r.label}</span>
+                  <p className="text-xs text-gray-500 mt-0.5">{r.description}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <FieldHelp text="Ο ρόλος καθορίζει τις αρμοδιότητες και τα δικαιώματα" />
+        </FormSection>
 
-            {/* Contact */}
-            <div className="border-t pt-6">
-              <h3 className="mb-4 text-sm font-medium text-gray-900">Στοιχεία Επικοινωνίας</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="email@example.com"
-                    disabled={loading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Τηλέφωνο
-                  </label>
-                  <Input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="69XXXXXXXX"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
+        <FormSection
+          title="Στοιχεία Επικοινωνίας"
+          description="Email και τηλέφωνο"
+          icon="📱"
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email@example.com"
+                disabled={loading}
+              />
+              <FieldHelp text="Για αποστολή προγράμματος και ενημερώσεων" />
             </div>
-
-            {/* Dates */}
-            <div className="border-t pt-6">
-              <h3 className="mb-4 text-sm font-medium text-gray-900">Ημερομηνίες</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Ημερομηνία Γέννησης
-                  </label>
-                  <Input
-                    type="date"
-                    value={dateOfBirth}
-                    onChange={(e) => setDateOfBirth(e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Ημερομηνία Πρόσληψης
-                  </label>
-                  <Input
-                    type="date"
-                    value={hireDate}
-                    onChange={(e) => setHireDate(e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-              </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Τηλέφωνο
+              </label>
+              <Input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="69XXXXXXXX"
+                disabled={loading}
+              />
+              <FieldHelp text="Κινητό τηλέφωνο για άμεση επικοινωνία" />
             </div>
+          </div>
+        </FormSection>
 
-            {/* Emergency Contact */}
-            <div className="border-t pt-6">
-              <h3 className="mb-4 text-sm font-medium text-gray-900">Επικοινωνία Έκτακτης Ανάγκης</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Όνομα Επαφής
-                  </label>
-                  <Input
-                    value={emergencyContactName}
-                    onChange={(e) => setEmergencyContactName(e.target.value)}
-                    placeholder="π.χ. Μαρία Παπαδοπούλου"
-                    disabled={loading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Τηλέφωνο Επαφής
-                  </label>
-                  <Input
-                    type="tel"
-                    value={emergencyContactPhone}
-                    onChange={(e) => setEmergencyContactPhone(e.target.value)}
-                    placeholder="69XXXXXXXX"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
+        <FormSection
+          title="Ημερομηνίες"
+          description="Στοιχεία για το αρχείο"
+          icon="📅"
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Ημερομηνία Γέννησης
+              </label>
+              <Input
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                disabled={loading}
+              />
+              <FieldHelp text="Προαιρετικό - για το αρχείο" />
             </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Ημερομηνία Πρόσληψης
+              </label>
+              <Input
+                type="date"
+                value={hireDate}
+                onChange={(e) => setHireDate(e.target.value)}
+                disabled={loading}
+              />
+              <FieldHelp text="Πότε ξεκίνησε η συνεργασία" />
+            </div>
+          </div>
+        </FormSection>
 
-            {/* Buttons */}
-            <div className="flex gap-4 pt-4 border-t">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Δημιουργία...' : 'Δημιουργία Μέλους'}
+        <FormSection
+          title="Επικοινωνία Έκτακτης Ανάγκης"
+          description="Σε περίπτωση που χρειαστεί"
+          icon="🆘"
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Όνομα Επαφής
+              </label>
+              <Input
+                value={emergencyContactName}
+                onChange={(e) => setEmergencyContactName(e.target.value)}
+                placeholder="π.χ. Μαρία Παπαδοπούλου"
+                disabled={loading}
+              />
+              <FieldHelp text="Συγγενής ή άτομο εμπιστοσύνης" />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Τηλέφωνο Επαφής
+              </label>
+              <Input
+                type="tel"
+                value={emergencyContactPhone}
+                onChange={(e) => setEmergencyContactPhone(e.target.value)}
+                placeholder="69XXXXXXXX"
+                disabled={loading}
+              />
+              <FieldHelp text="Τηλέφωνο για έκτακτες περιπτώσεις" />
+            </div>
+          </div>
+
+          <InfoBox type="warning" title="Σημαντικό">
+            Η επαφή έκτακτης ανάγκης χρησιμοποιείται μόνο σε σοβαρές περιπτώσεις
+            (ατύχημα, ασθένεια κλπ). Βεβαιώσου ότι το άτομο γνωρίζει ότι έχει οριστεί ως επαφή.
+          </InfoBox>
+        </FormSection>
+
+        <InfoBox type="tip" title="Τι γίνεται μετά;">
+          Αφού δημιουργήσεις το μέλος, μπορείς να το αναθέσεις σε <strong>δραστηριότητες</strong>
+          και να δεις το προσωπικό του πρόγραμμα. Επίσης, μπορείς να ορίσεις τις
+          <strong> ειδικότητές</strong> του (π.χ. ναυαγοσώστης, αθλητικός εκπαιδευτής).
+        </InfoBox>
+
+        <Card className="mt-6">
+          <CardFooter className="flex justify-between py-4">
+            <Link href="/dashboard/staff">
+              <Button type="button" variant="outline" disabled={loading}>
+                Ακύρωση
               </Button>
-              <Link href="/dashboard/staff">
-                <Button type="button" variant="outline" disabled={loading}>
-                  Ακύρωση
-                </Button>
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+            </Link>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Δημιουργία...' : '✓ Δημιουργία Μέλους'}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
     </div>
   );
 }
