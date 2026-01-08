@@ -1,15 +1,24 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/sidebar';
 import { MobileNav } from '@/components/mobile-nav';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { AIAssistant } from '@/components/ai/ai-assistant';
+import { QuickCreateProvider } from '@/components/quick-create';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  const handleCreateSuccess = (type: string, data: any) => {
+    // Refresh the current page to show new data
+    router.refresh();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Sidebar */}
@@ -43,6 +52,9 @@ export default function DashboardLayout({
       <div className="lg:pl-64">
         <AIAssistant />
       </div>
+
+      {/* Quick Create FAB & Modal */}
+      <QuickCreateProvider onCreateSuccess={handleCreateSuccess} />
     </div>
   );
 }

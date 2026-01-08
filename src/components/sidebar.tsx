@@ -25,7 +25,8 @@ const navigation: NavSection[] = [
     title: '',
     items: [
       { href: '/dashboard', label: 'Αρχική', icon: '📊' },
-      { href: '/dashboard/guide', label: 'Οδηγός Ρύθμισης', icon: '📖' },
+      { href: '/dashboard/quick-setup', label: 'Γρήγορη Ρύθμιση', icon: '⚡' },
+      { href: '/dashboard/guide', label: 'Οδηγός', icon: '📖' },
     ],
   },
   {
