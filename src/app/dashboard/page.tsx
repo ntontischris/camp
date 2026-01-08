@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useOrganizations } from '@/hooks/use-organizations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DashboardSkeleton } from '@/components/ui/skeleton';
 import type { Database } from '@/lib/types/database';
 
 type Session = Database['public']['Tables']['sessions']['Row'];
@@ -110,11 +111,7 @@ export default function DashboardPage() {
   };
 
   if (authLoading || orgsLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-600">Φόρτωση...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -270,14 +267,14 @@ export default function DashboardPage() {
             />
             <FeatureItem
               icon="⚠️"
-              title="Conflict Detection"
-              description="Εντοπισμός συγκρούσεων"
+              title="Εντοπισμός Συγκρούσεων"
+              description="Αυτόματη ανίχνευση προβλημάτων"
               status="active"
             />
             <FeatureItem
               icon="👥"
-              title="Staff Assignment"
-              description="Ανάθεση προσωπικού"
+              title="Ανάθεση Προσωπικού"
+              description="Διαχείριση βαρδιών"
               status="active"
             />
           </div>

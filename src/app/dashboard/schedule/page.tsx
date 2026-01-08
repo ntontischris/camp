@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useOrganizations } from '@/hooks/use-organizations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Combobox } from '@/components/ui/combobox';
+import { ScheduleGridSkeleton } from '@/components/ui/skeleton';
 import { GenerationWizard } from '@/components/schedule/generation-wizard';
 import { ExportModal } from '@/components/schedule/export-modal';
 import { WeatherPanel } from '@/components/schedule/weather-panel';
@@ -557,10 +559,33 @@ function ScheduleContent() {
     await loadAllScheduleSlots();
   }, [selectedSessionId, supabase]);
 
+  // Prepare combobox items
+  const activityItems = useMemo(() =>
+    activities.map(a => ({
+      value: a.id,
+      label: a.name,
+      icon: a.icon || '🎯',
+      description: a.description || undefined,
+    })), [activities]
+  );
+
+  const facilityItems = useMemo(() =>
+    facilities.map(f => ({
+      value: f.id,
+      label: f.name,
+      icon: f.indoor ? '🏠' : '🌳',
+      description: f.location || undefined,
+    })), [facilities]
+  );
+
   if (orgLoading || loading) {
     return (
       <div className="mx-auto max-w-full px-4 py-8">
-        <div className="text-center text-gray-600">Φόρτωση...</div>
+        <div className="mb-6">
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2" />
+          <div className="h-4 w-64 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <ScheduleGridSkeleton />
       </div>
     );
   }
@@ -622,7 +647,7 @@ function ScheduleContent() {
                 { mode: 'week' as ViewMode, label: 'Εβδομάδα' },
                 { mode: 'day' as ViewMode, label: 'Ημέρα' },
                 { mode: 'facility' as ViewMode, label: 'Χώροι' },
-                { mode: 'staff' as ViewMode, label: 'Staff' },
+                { mode: 'staff' as ViewMode, label: 'Προσωπικό' },
               ].map(({ mode, label }) => (
                 <button
                   key={mode}
@@ -865,34 +890,30 @@ function ScheduleContent() {
                 <label className="block text-sm font-medium text-gray-700">
                   Δραστηριότητα
                 </label>
-                <select
+                <Combobox
+                  items={activityItems}
                   value={modalActivityId}
-                  onChange={(e) => setModalActivityId(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  onValueChange={setModalActivityId}
+                  placeholder="Επίλεξε δραστηριότητα..."
+                  searchPlaceholder="Αναζήτηση δραστηριότητας..."
+                  emptyText="Δεν βρέθηκαν δραστηριότητες"
                   disabled={saving}
-                >
-                  <option value="">Επίλεξε δραστηριότητα...</option>
-                  {activities.map((a) => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
+                />
               </div>
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Εγκατάσταση
+                  Χώρος
                 </label>
-                <select
+                <Combobox
+                  items={facilityItems}
                   value={modalFacilityId}
-                  onChange={(e) => setModalFacilityId(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  onValueChange={setModalFacilityId}
+                  placeholder="Επίλεξε χώρο..."
+                  searchPlaceholder="Αναζήτηση χώρου..."
+                  emptyText="Δεν βρέθηκαν χώροι"
                   disabled={saving}
-                >
-                  <option value="">Επίλεξε εγκατάσταση...</option>
-                  {facilities.map((f) => (
-                    <option key={f.id} value={f.id}>{f.name}</option>
-                  ))}
-                </select>
+                />
               </div>
 
               <div className="space-y-2">
