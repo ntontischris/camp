@@ -6,6 +6,7 @@ import { useOrganizations } from '@/hooks/use-organizations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { entityToast, parseDbError } from '@/lib/toast';
 
 type CreateType = 'group' | 'activity' | 'staff' | 'facility' | 'session';
 
@@ -207,10 +208,29 @@ export function QuickCreateModal({
 
       if (result?.error) throw result.error;
 
+      // Show success toast
+      switch (type) {
+        case 'group':
+          entityToast.group.created();
+          break;
+        case 'activity':
+          entityToast.activity.created();
+          break;
+        case 'facility':
+          entityToast.facility.created();
+          break;
+        case 'staff':
+          entityToast.staff.created();
+          break;
+        case 'session':
+          entityToast.session.created();
+          break;
+      }
+
       onSuccess?.(type, result?.data);
       onClose();
     } catch (err: any) {
-      setError(err.message);
+      setError(parseDbError(err));
     } finally {
       setLoading(false);
     }
