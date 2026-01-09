@@ -168,6 +168,30 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Quick Setup Banner - Show when stats are low */}
+      {stats && (stats.totalActivities < 3 || stats.totalFacilities < 2 || stats.totalGroups < 2) && (
+        <Card className="mb-8 bg-gradient-to-r from-primary-600 to-blue-600 text-white border-0">
+          <CardContent className="py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-4xl">⚡</span>
+                <div>
+                  <h3 className="text-lg font-bold">Ξεκίνα Γρήγορα!</h3>
+                  <p className="text-white/80 text-sm mt-1">
+                    Χρησιμοποίησε τον οδηγό γρήγορης ρύθμισης για να ετοιμάσεις το camp σου σε λίγα λεπτά
+                  </p>
+                </div>
+              </div>
+              <Link href="/dashboard/quick-setup">
+                <Button variant="secondary" className="bg-white text-primary-700 hover:bg-white/90">
+                  Γρήγορη Ρύθμιση
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Quick Actions */}
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Upcoming Session */}
@@ -194,15 +218,15 @@ export default function DashboardPage() {
             ) : (
               <div className="text-center py-4">
                 <p className="text-gray-500 mb-3">Δεν υπάρχει προγραμματισμένη περίοδος</p>
-                <Link href="/dashboard/sessions/new">
-                  <Button>Νέα Περίοδος</Button>
+                <Link href="/dashboard/quick-setup">
+                  <Button>Γρήγορη Δημιουργία</Button>
                 </Link>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Enhanced */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">⚡ Γρήγορες Ενέργειες</CardTitle>
@@ -215,14 +239,14 @@ export default function DashboardPage() {
                 label="Πρόγραμμα"
               />
               <QuickActionButton
-                href="/dashboard/activities/new"
-                icon="➕"
-                label="Νέα Δραστηριότητα"
+                href="/dashboard/quick-setup"
+                icon="⚡"
+                label="Γρήγορη Ρύθμιση"
               />
               <QuickActionButton
                 href="/dashboard/constraints"
                 icon="⚙️"
-                label="Περιορισμοί"
+                label="Κανόνες"
               />
               <QuickActionButton
                 href="/dashboard/templates"
@@ -230,6 +254,9 @@ export default function DashboardPage() {
                 label="Πρότυπα"
               />
             </div>
+            <p className="text-xs text-gray-400 mt-3 text-center">
+              Πάτα <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">+</kbd> για γρήγορη δημιουργία
+            </p>
           </CardContent>
         </Card>
       </div>
